@@ -23,7 +23,9 @@ func (p *Processor) ImportBatch(batch string, records []domain.Record) (report.R
 	}
 	for _, failed := range bad {
 		r := failed.Record
-		r.Status = domain.StatusSubmitted
+		// 校验失败的记录保留错误明细，但不得标为已上送；
+		// 仅成功项进入上送流程，失败项标记为 failed 以正确显示。
+		r.Status = domain.StatusFailed
 		r.Remark = validate.ErrorText(failed)
 		if e := p.Service.DB.SaveRecord(r); e != nil {
 			return report.Report{}, e
